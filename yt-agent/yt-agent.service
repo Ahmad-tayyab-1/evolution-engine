@@ -1,0 +1,19 @@
+[Unit]
+Description=Autonomous YouTube Channel Agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=/home/%i/yt-agent
+EnvironmentFile=/home/%i/yt-agent/.env
+ExecStart=/home/%i/yt-agent/venv/bin/python -m agent.loop
+Restart=on-failure
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=yt-agent
+
+[Install]
+WantedBy=multi-user.target

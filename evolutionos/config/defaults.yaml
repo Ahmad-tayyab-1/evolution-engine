@@ -1,0 +1,134 @@
+evolution:
+  # Minimum exploration rate (FR-EC-212)
+  # Below this: system never explores; gets trapped (RSK-004)
+  min_exploration_rate: 0.10
+
+  # Maximum exploration rate (FR-EC-212)
+  # Above this: system never exploits; wastes resources
+  max_exploration_rate: 0.40
+
+  # Default exploration rate (auto-adjusts within min/max)
+  default_exploration_rate: 0.15
+
+  # Cycles between meta-reflection (FR-EC-122)
+  meta_reflection_interval: 20
+
+  # Max concurrent RADICAL class experiments (GOV-EXP-002)
+  # Default 0: RADICAL always requires human approval
+  radical_experiment_budget: 0
+
+  # Mutation budget per experiment (FR-EC-421)
+  default_mutation_budget: 1
+
+knowledge:
+  # Minimum supporting experiments before CANDIDATE -> ACTIVE (FR-EC-111)
+  min_evidence_count: 3
+
+  # Semantic similarity threshold for consolidation (FR-EC-104)
+  consolidation_similarity_threshold: 0.85
+
+  # Days without validation before confidence decay begins (FR-EC-203)
+  decay_window_days: 90
+
+  # Confidence below which record transitions to DEPRECATED (FR-EC-112)
+  deprecation_threshold: 0.35
+
+  # Confidence floor (CON-ETH-003 - never claim certainty)
+  confidence_floor: 0.01
+  confidence_ceiling: 0.99
+
+belief:
+  # Learning rate for confidence updates (FR-EC-202)
+  # Higher = faster adaptation but less stable
+  learning_rate: 0.15
+
+  # Strength of regularization toward 0.5 for unvalidated beliefs
+  prior_pull: 0.05
+
+  # Calibration audit interval in days (GOV-BEL-001)
+  calibration_audit_interval_days: 14
+
+  # Maximum calibration error before alert (KPI-BEL-002)
+  calibration_error_threshold: 0.20
+
+fitness:
+  # Default weight profile (FR-EC-431)
+  # Modifying weights requires a GovernancePolicy version change
+  weights:
+    learning_yield: 0.35       # Highest: we optimize for learning (ADR-010)
+    prediction_accuracy: 0.25
+    performance_delta: 0.20
+    strategic_alignment: 0.15
+    cost_efficiency: 0.05
+
+  # Goodhart divergence threshold (GOV-FIT-002)
+  goodhart_alert_threshold: 0.25
+
+governance:
+  # Default approval mode for new experiments (ADR-017)
+  default_approval_mode: GATED
+
+  # Max publications per day (GOV-SAF-002)
+  max_publications_per_day: 3
+
+  # Cost ceiling per experiment (GOV-SAF-002)
+  max_cost_per_experiment_usd: 2.00
+
+  # Monthly budget ceiling (INF-CST-002)
+  monthly_budget_ceiling_usd: 50.00
+
+providers:
+  # Task class -> provider tier mapping (FR-PX-1302)
+  routing:
+    REASONING_HEAVY:   [gpt-4o, gemini-1.5-pro, claude-3-5-sonnet]
+    GENERATION_BULK:   [gpt-4o-mini, gemini-1.5-flash, groq-llama3]
+    CLASSIFICATION_CHEAP: [gpt-4o-mini, groq-llama3]
+
+  # LLM response cache TTL in seconds (FR-PX-1303)
+  cache_ttl_seconds: 604800  # 7 days
+
+  # Circuit breaker: failures before provider marked FAILED
+  circuit_breaker_threshold: 5
+
+  # Circuit breaker: seconds before retry (NFR-REL-002)
+  circuit_breaker_reset_seconds: 300
+
+scheduler:
+  # Evolution cycle interval (FR-EC-501)
+  evolution_cycle_cron: "0 6 * * *"  # Daily at 06:00 UTC
+
+  # Measurement job offsets post-publish (FR-PX-901)
+  measurement_windows:
+    - offset_hours: 24
+    - offset_hours: 72
+    - offset_hours: 168        # 7 days
+    - offset_hours: 672        # 28 days
+
+  # Memory consolidation schedule (FR-EC-440)
+  consolidation_cron: "0 3 * * *"  # Daily at 03:00 UTC
+
+  # Calibration audit schedule (GOV-BEL-001)
+  calibration_audit_cron: "0 4 * * 1"  # Weekly Monday 04:00 UTC
+
+storage:
+  # Intermediate artifact TTL in days (INF-OBJ-002)
+  intermediate_ttl_days: 14
+
+  # Storage alert threshold (INF-OBJ-003)
+  storage_alert_percent: 80
+
+  # S3-compatible endpoint (empty = use AWS S3)
+  object_store_endpoint: ""    # set to http://minio:9000 for local dev
+
+simulation:
+  # Planted-rule discovery threshold for intelligence gate (FR-EC-601)
+  min_discovery_rate: 0.80
+
+  # Max cycles for intelligence gate (FR-EC-601)
+  max_simulation_cycles: 50
+
+  # Acceptable calibration error in simulation (AC-V5-002)
+  max_calibration_error: 0.15
+
+  # Noise level for synthetic observations
+  default_noise_stddev: 0.03

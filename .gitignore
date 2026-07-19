@@ -1,0 +1,33 @@
+# Virtual Environments and Python cache
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.egg-info/
+
+# Environment and Secrets (CRITICAL SECURITY)
+.env
+*.env
+*.pem
+ss/
+secrets/
+*.json
+!package.json
+!tsconfig.json
+!skills.json
+token.json
+client_secret.json
+
+# Databases and temporary media
+db/
+*.db
+*.sqlite
+*.sqlite3
+*.log
+*.tar.gz
+tmp/
+images/
+audio/
+final.mp4
+thumb.jpg

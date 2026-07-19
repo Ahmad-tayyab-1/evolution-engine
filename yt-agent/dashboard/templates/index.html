@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evolution OS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050608;
+            --surface: rgba(14,17,26,0.8);
+            --border: rgba(255,255,255,0.06);
+            --border-h: rgba(99,102,241,0.3);
+            --indigo: #6366f1;
+            --cyan: #06b6d4;
+            --emerald: #10b981;
+            --amber: #f59e0b;
+            --rose: #f43f5e;
+            --text: #f1f5f9;
+            --dim: #64748b;
+            --dimmer: #475569;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            background-image:
+                radial-gradient(ellipse at 10% 15%, rgba(99,102,241,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 85%, rgba(6,182,212,0.08) 0%, transparent 50%);
+        }
+
+        /* ── Navbar ── */
+        .nav {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 32px;
+            background: rgba(8,10,16,0.85);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .brand { display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 700; }
+        .brand-icon {
+            width: 34px; height: 34px; border-radius: 9px;
+            background: linear-gradient(135deg, var(--indigo), var(--cyan));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px; box-shadow: 0 4px 12px rgba(99,102,241,0.35);
+        }
+        .nav-r { display: flex; align-items: center; gap: 16px; }
+        .pill {
+            display: flex; align-items: center; gap: 7px;
+            padding: 5px 12px; border-radius: 16px;
+            font-size: 12px; font-weight: 600;
+        }
+        .pill-ok { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: var(--emerald); }
+        .pill-err { background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.3); color: var(--rose); }
+        .dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        .dot-ok { background: var(--emerald); box-shadow: 0 0 8px var(--emerald); }
+        .dot-err { background: var(--rose); box-shadow: 0 0 8px var(--rose); }
+        @keyframes pulse { 0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.5} }
+        .btn-out {
+            padding: 6px 14px; background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border); border-radius: 8px;
+            color: var(--dim); text-decoration: none; font-size: 12px; font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-out:hover { background: rgba(244,63,94,0.15); border-color: var(--rose); color: #fff; }
+
+        /* ── Layout ── */
+        .wrap { max-width: 1360px; margin: 0 auto; padding: 28px 32px; }
+
+        /* ── Stat Cards ── */
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; margin-bottom: 28px; }
+        .sc {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
+            padding: 20px 22px; position: relative; overflow: hidden;
+            transition: transform 0.25s, border-color 0.25s;
+        }
+        .sc:hover { transform: translateY(-3px); border-color: var(--border-h); }
+        .sc::before {
+            content: ''; position: absolute; top: 0; left: 0;
+            width: 100%; height: 2.5px;
+            background: linear-gradient(90deg, var(--indigo), var(--cyan));
+        }
+        .sc-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: .7px; font-weight: 600; }
+        .sc-val { font-size: 26px; font-weight: 700; margin-top: 6px; }
+        .sc-sub { font-size: 11px; color: var(--cyan); margin-top: 4px; }
+
+        /* ── Tabs ── */
+        .tabs {
+            display: flex; gap: 8px; margin-bottom: 22px;
+            border-bottom: 1px solid var(--border); padding-bottom: 12px;
+            overflow-x: auto; -webkit-overflow-scrolling: touch;
+        }
+        .tab {
+            background: transparent; border: 1px solid var(--border);
+            color: var(--dim); padding: 8px 18px; border-radius: 10px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            white-space: nowrap; transition: all 0.25s;
+        }
+        .tab.on, .tab:hover {
+            background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(6,182,212,0.15));
+            border-color: var(--cyan); color: #fff;
+        }
+        .pane { display: none; animation: fadeIn 0.35s ease; }
+        .pane.on { display: block; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+        /* ── Cards ── */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 18px; padding: 22px;
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+        .card:hover { border-color: var(--border-h); box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+        .card-title { font-size: 15px; font-weight: 600; margin-bottom: 10px; line-height: 1.35; }
+        .card-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+        .tag {
+            padding: 3px 8px; border-radius: 6px;
+            font-size: 11px; font-weight: 600;
+            background: rgba(255,255,255,0.05); color: var(--dim);
+        }
+        .tag-long { border: 1px solid rgba(6,182,212,0.3); color: #7dd3fc; }
+        .tag-short { border: 1px solid rgba(245,158,11,0.3); color: #fde68a; }
+        .tag-shorts { border: 1px solid rgba(245,158,11,0.3); color: #fde68a; }
+        .tag-ok { border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
+        .tag-err { border: 1px solid rgba(244,63,94,0.3); color: #fca5a5; }
+        .tag-pending { border: 1px solid rgba(99,102,241,0.3); color: #a5b4fc; }
+
+        /* ── Metric Strip ── */
+        .mstrip {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+            gap: 10px; padding-top: 14px; border-top: 1px solid var(--border);
+        }
+        .mi { text-align: center; }
+        .mi-val { font-size: 15px; font-weight: 700; }
+        .mi-lbl { font-size: 10px; color: var(--dim); margin-top: 1px; }
+
+        /* ── Progress Bar ── */
+        .pbar-wrap {
+            width: 100%; height: 7px; background: rgba(255,255,255,0.06);
+            border-radius: 5px; margin: 10px 0; overflow: hidden;
+        }
+        .pbar {
+            height: 100%; border-radius: 5px;
+            background: linear-gradient(90deg, var(--indigo), var(--cyan));
+            transition: width 0.5s ease;
+        }
+
+        /* ── Table ── */
+        .tbl-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th {
+            text-align: left; padding: 10px 14px;
+            font-size: 11px; font-weight: 600; color: var(--dim);
+            text-transform: uppercase; letter-spacing: .5px;
+            border-bottom: 1px solid var(--border);
+        }
+        td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        a { color: var(--cyan); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ── Terminal ── */
+        .term {
+            background: #030406; border: 1px solid var(--border); border-radius: 14px;
+            padding: 18px; font-family: 'JetBrains Mono', monospace;
+            font-size: 12px; color: #a5b4fc; line-height: 1.55;
+            max-height: 500px; overflow-y: auto; white-space: pre-wrap;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.7);
+        }
+        .term-hdr {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px;
+        }
+        .btn-ref {
+            background: var(--indigo); color: #fff; border: none;
+            padding: 5px 12px; border-radius: 7px; font-size: 12px;
+            font-weight: 600; cursor: pointer; transition: background 0.2s;
+        }
+        .btn-ref:hover { background: #4f46e5; }
+
+        /* ── Empty State ── */
+        .empty { color: var(--dimmer); font-size: 14px; padding: 30px 0; text-align: center; }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .nav { padding: 12px 16px; }
+            .wrap { padding: 20px 16px; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+<nav class="nav">
+    <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <span>Evolution OS</span>
+    </div>
+    <div class="nav-r">
+        <div class="pill pill-ok" id="svcPill">
+            <div class="dot dot-ok"></div>
+            <span id="svcText">Checking...</span>
+        </div>
+        <a href="/logout" class="btn-out">Sign Out</a>
+    </div>
+</nav>
+
+<div class="wrap">
+    <!-- Stats Row -->
+    <div class="stats">
+        <div class="sc">
+            <div class="sc-label">Phase</div>
+            <div class="sc-val" id="sPhase">—</div>
+            <div class="sc-sub" id="sPhaseSub"></div>
+        </div>
+        <div class="sc">
+            <div class="sc-label">Subscribers</div>
+            <div class="sc-val" id="sSubs">0</div>
+            <div class="sc-sub" id="sSubsSub"></div>
+        </div>
+        <div class="sc">
+            <div class="sc-label">Watch Hours (12mo)</div>
+            <div class="sc-val" id="sHours">0</div>
+            <div class="sc-sub">Target: 4,000 hrs</div>
+        </div>
+        <div class="sc">
+            <div class="sc-label">Videos Produced</div>
+            <div class="sc-val" id="sVids">0</div>
+            <div class="sc-sub" id="sVidsSub"></div>
+        </div>
+        <div class="sc">
+            <div class="sc-label">Shorts Views (90d)</div>
+            <div class="sc-val" id="sShortsV">0</div>
+            <div class="sc-sub">Target: 10M views</div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" id="tabsBar">
+        <button class="tab on" data-tab="tNiches">Niche Discovery</button>
+        <button class="tab" data-tab="tVideos">Videos</button>
+        <button class="tab" data-tab="tAnalytics">YouTube Analytics</button>
+        <button class="tab" data-tab="tGenomes">Genome Lab</button>
+        <button class="tab" data-tab="tTopics">Top Topics</button>
+        <button class="tab" data-tab="tExperiments">Experiments</button>
+        <button class="tab" data-tab="tRules">Knowledge Base</button>
+        <button class="tab" data-tab="tLogs">Live Logs</button>
+    </div>
+
+    <!-- ═══ NICHES ═══ -->
+    <div class="pane on" id="tNiches">
+        <div class="grid" id="nicheGrid"><div class="empty">Fetching niche data...</div></div>
+    </div>
+
+    <!-- ═══ VIDEOS ═══ -->
+    <div class="pane" id="tVideos">
+        <div class="grid" id="videoGrid"><div class="empty">Fetching videos...</div></div>
+    </div>
+
+    <!-- ═══ YOUTUBE ANALYTICS ═══ -->
+    <div class="pane" id="tAnalytics">
+        <div class="tbl-wrap">
+            <table id="analyticsTable">
+                <thead>
+                    <tr>
+                        <th>YouTube ID</th>
+                        <th>Impressions</th>
+                        <th>CTR %</th>
+                        <th>Views</th>
+                        <th>Watch Hours</th>
+                        <th>Avg Duration</th>
+                        <th>Subs Gained</th>
+                        <th>Likes</th>
+                        <th>Comments</th>
+                        <th>Shares</th>
+                        <th>Fitness</th>
+                        <th>Snapshot</th>
+                    </tr>
+                </thead>
+                <tbody id="analyticsTbody">
+                    <tr><td colspan="12" class="empty">Fetching analytics...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ═══ GENOMES ═══ -->
+    <div class="pane" id="tGenomes">
+        <div class="grid" id="genomeGrid"><div class="empty">Fetching genomes...</div></div>
+    </div>
+
+    <!-- ═══ TOPICS ═══ -->
+    <div class="pane" id="tTopics">
+        <div class="tbl-wrap">
+            <table>
+                <thead>
+                    <tr><th>Topic</th><th>Format</th><th>CTR %</th><th>Avg Retention</th><th>Videos</th><th>Weight</th></tr>
+                </thead>
+                <tbody id="topicsTbody">
+                    <tr><td colspan="6" class="empty">Fetching topics...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ═══ EXPERIMENTS ═══ -->
+    <div class="pane" id="tExperiments">
+        <div class="tbl-wrap">
+            <table>
+                <thead>
+                    <tr><th>Variable</th><th>Hypothesis</th><th>Old</th><th>New</th><th>Result</th><th>Created</th></tr>
+                </thead>
+                <tbody id="expTbody">
+                    <tr><td colspan="6" class="empty">Fetching experiments...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ═══ KNOWLEDGE BASE ═══ -->
+    <div class="pane" id="tRules">
+        <div class="tbl-wrap">
+            <table>
+                <thead>
+                    <tr><th>Rule</th><th>Category</th><th>Confidence</th><th>Evidence</th></tr>
+                </thead>
+                <tbody id="rulesTbody">
+                    <tr><td colspan="4" class="empty">Fetching rules...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ═══ LOGS ═══ -->
+    <div class="pane" id="tLogs">
+        <div class="term-hdr">
+            <span style="font-size:13px;color:var(--dim);">yt-agent service output (auto-refresh every 5s)</span>
+            <button class="btn-ref" onclick="loadLogs()">Refresh</button>
+        </div>
+        <div class="term" id="termBox">Loading logs...</div>
+    </div>
+</div>
+
+<script>
+// ── Tab Switching ──
+document.getElementById('tabsBar').addEventListener('click', e => {
+    const btn = e.target.closest('.tab');
+    if (!btn) return;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById(btn.dataset.tab).classList.add('on');
+    if (btn.dataset.tab === 'tLogs') loadLogs();
+});
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// ── Fetchers ──
+async function loadOverview() {
+    try {
+        const r = await fetch('/api/overview');
+        if (r.status === 303 || r.status === 401) { location.href = '/login'; return; }
+        const d = await r.json();
+
+        // Service status
+        const pill = document.getElementById('svcPill');
+        const dot = pill.querySelector('.dot');
+        const txt = document.getElementById('svcText');
+        if (d.service === 'active') {
+            pill.className = 'pill pill-ok'; dot.className = 'dot dot-ok'; txt.textContent = 'Agent Running';
+        } else {
+            pill.className = 'pill pill-err'; dot.className = 'dot dot-err'; txt.textContent = d.service.toUpperCase();
+        }
+
+        const s = d.strategy;
+        document.getElementById('sPhase').textContent = s.phase === 'locked' ? '🏆 Locked' : '🧪 Niche Discovery';
+        document.getElementById('sPhaseSub').textContent = s.locked_niche !== 'Not locked yet' ? 'Niche: ' + s.locked_niche : 'Testing candidates...';
+        document.getElementById('sSubs').textContent = (s.subs || 0).toLocaleString();
+        document.getElementById('sSubsSub').textContent = 'Target: 1,000 subs';
+        document.getElementById('sHours').textContent = (s.watch_hours_12mo || 0).toLocaleString();
+        document.getElementById('sShortsV').textContent = (s.shorts_views_90d || 0).toLocaleString();
+        document.getElementById('sVids').textContent = d.total_videos;
+        document.getElementById('sVidsSub').textContent = d.uploaded + ' uploaded · ' + d.failed + ' failed';
+    } catch(e) { console.error(e); }
+}
+
+async function loadNiches() {
+    try {
+        const r = await fetch('/api/niches'); const d = await r.json();
+        const g = document.getElementById('nicheGrid');
+        if (!d.length) { g.innerHTML = '<div class="empty">No niche candidates yet. The agent is initializing...</div>'; return; }
+        g.innerHTML = d.map(n => {
+            const pct = Math.min(100, Math.round((n.videos_count / 4) * 100));
+            return `<div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <span class="card-title" style="margin:0">${esc(n.niche.replace(/_/g,' '))}</span>
+                    <span class="tag tag-pending">Score: ${n.opportunity_score}</span>
+                </div>
+                <div style="font-size:12px;color:var(--dim);">Videos: ${n.videos_count} / 4 (${pct}%)</div>
+                <div class="pbar-wrap"><div class="pbar" style="width:${pct}%"></div></div>
+                <div class="mstrip">
+                    <div class="mi"><div class="mi-val">${(n.avg_ctr*100).toFixed(1)}%</div><div class="mi-lbl">CTR</div></div>
+                    <div class="mi"><div class="mi-val">${n.avg_retention.toFixed(0)}s</div><div class="mi-lbl">Retention</div></div>
+                    <div class="mi"><div class="mi-val">${n.videos_count}</div><div class="mi-lbl">Measured</div></div>
+                </div>
+            </div>`;
+        }).join('');
+    } catch(e) { console.error(e); }
+}
+
+async function loadVideos() {
+    try {
+        const r = await fetch('/api/videos'); const d = await r.json();
+        const g = document.getElementById('videoGrid');
+        if (!d.length) { g.innerHTML = '<div class="empty">No videos produced yet. First cycle is in progress...</div>'; return; }
+        g.innerHTML = d.map(v => {
+            const fmt = (v.format||'').toLowerCase();
+            const fmtClass = fmt.includes('short') ? 'tag-short' : 'tag-long';
+            const statusClass = v.status === 'uploaded' ? 'tag-ok' : v.status === 'failed' ? 'tag-err' : 'tag-pending';
+            const ytLink = v.youtube_id
+                ? `<a href="https://youtu.be/${v.youtube_id}" target="_blank" rel="noopener">▶ Watch on YouTube</a>`
+                : `<span style="color:var(--dimmer);font-size:12px;">Processing...</span>`;
+            return `<div class="card">
+                <div class="card-title">${esc(v.title)}</div>
+                <div class="card-meta">
+                    <span class="tag ${fmtClass}">${esc(v.format).toUpperCase()}</span>
+                    <span class="tag">${esc(v.niche.replace(/_/g,' '))}</span>
+                    <span class="tag ${statusClass}">${esc(v.status)}</span>
+                    <span class="tag">Genome v${v.genome_version||'?'}</span>
+                </div>
+                <div style="margin-bottom:14px;font-size:13px;">${ytLink}</div>
+                <div class="mstrip">
+                    <div class="mi"><div class="mi-val">${v.views}</div><div class="mi-lbl">Views</div></div>
+                    <div class="mi"><div class="mi-val">${v.ctr}%</div><div class="mi-lbl">CTR</div></div>
+                    <div class="mi"><div class="mi-val">${v.avg_view_duration_sec}s</div><div class="mi-lbl">Duration</div></div>
+                    <div class="mi"><div class="mi-val">${v.likes}</div><div class="mi-lbl">Likes</div></div>
+                    <div class="mi"><div class="mi-val">${v.fitness}</div><div class="mi-lbl">Fitness</div></div>
+                </div>
+                <div style="margin-top:10px;font-size:11px;color:var(--dimmer);">${esc(v.created_at)}</div>
+            </div>`;
+        }).join('');
+    } catch(e) { console.error(e); }
+}
+
+async function loadAnalytics() {
+    try {
+        const r = await fetch('/api/analytics'); const d = await r.json();
+        const tb = document.getElementById('analyticsTbody');
+        if (!d.length) { tb.innerHTML = '<tr><td colspan="12" class="empty">No analytics snapshots collected yet. Data appears after the agent evaluates uploaded videos.</td></tr>'; return; }
+        tb.innerHTML = d.map(s => `<tr>
+            <td>${s.youtube_id ? `<a href="https://youtu.be/${s.youtube_id}" target="_blank">${esc(s.youtube_id)}</a>` : '—'}</td>
+            <td>${s.impressions.toLocaleString()}</td>
+            <td>${s.ctr}%</td>
+            <td>${s.views.toLocaleString()}</td>
+            <td>${s.watch_time_hours}</td>
+            <td>${s.avg_view_duration_sec}s</td>
+            <td>${s.subs_gained}</td>
+            <td>${s.likes}</td>
+            <td>${s.comments}</td>
+            <td>${s.shares}</td>
+            <td>${s.fitness}</td>
+            <td>${esc(s.snapshot_at)}</td>
+        </tr>`).join('');
+    } catch(e) { console.error(e); }
+}
+
+async function loadGenomes() {
+    try {
+        const r = await fetch('/api/genomes'); const d = await r.json();
+        const g = document.getElementById('genomeGrid');
+        if (!d.length) { g.innerHTML = '<div class="empty">No genomes found.</div>'; return; }
+        g.innerHTML = d.map(gn => {
+            const statusClass = gn.status === 'control' ? 'tag-ok' : gn.status === 'candidate' ? 'tag-pending' : 'tag-err';
+            return `<div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <span class="card-title" style="margin:0">Genome v${gn.version}</span>
+                    <span class="tag ${statusClass}">${esc(gn.status).toUpperCase()}</span>
+                </div>
+                <div style="font-size:12px;color:var(--dim);margin-bottom:12px;">
+                    Parent: ${gn.parent_version ? 'v'+gn.parent_version : 'Root'} · Created: ${esc(gn.created_at)}
+                </div>
+                <p style="font-size:13px;line-height:1.5;color:#cbd5e1;margin-bottom:14px;">${esc(gn.rationale)}</p>
+                <div class="mstrip">
+                    <div class="mi"><div class="mi-val">${gn.videos_produced}</div><div class="mi-lbl">Videos</div></div>
+                    <div class="mi"><div class="mi-val">${gn.avg_ctr}%</div><div class="mi-lbl">CTR</div></div>
+                    <div class="mi"><div class="mi-val">${gn.avg_retention}s</div><div class="mi-lbl">Retention</div></div>
+                </div>
+            </div>`;
+        }).join('');
+    } catch(e) { console.error(e); }
+}
+
+async function loadTopics() {
+    try {
+        const r = await fetch('/api/topics'); const d = await r.json();
+        const tb = document.getElementById('topicsTbody');
+        if (!d.length) { tb.innerHTML = '<tr><td colspan="6" class="empty">No topic scores yet.</td></tr>'; return; }
+        tb.innerHTML = d.map(t => `<tr>
+            <td>${esc(t.topic)}</td>
+            <td><span class="tag ${t.format.includes('short')?'tag-short':'tag-long'}">${esc(t.format)}</span></td>
+            <td>${t.avg_ctr}%</td>
+            <td>${t.avg_retention}s</td>
+            <td>${t.videos_count}</td>
+            <td>${t.weight}</td>
+        </tr>`).join('');
+    } catch(e) { console.error(e); }
+}
+
+async function loadExperiments() {
+    try {
+        const r = await fetch('/api/experiments'); const d = await r.json();
+        const tb = document.getElementById('expTbody');
+        if (!d.length) { tb.innerHTML = '<tr><td colspan="6" class="empty">No experiments recorded yet.</td></tr>'; return; }
+        tb.innerHTML = d.map(e => {
+            const rc = e.result === 'confirmed' ? 'tag-ok' : e.result === 'refuted' ? 'tag-err' : 'tag-pending';
+            return `<tr>
+                <td><strong>${esc(e.variable)}</strong></td>
+                <td>${esc(e.hypothesis)}</td>
+                <td style="font-size:12px;color:var(--dim)">${esc(e.old_value)}</td>
+                <td style="font-size:12px;color:var(--dim)">${esc(e.new_value)}</td>
+                <td><span class="tag ${rc}">${esc(e.result)}</span></td>
+                <td>${esc(e.created_at)}</td>
+            </tr>`;
+        }).join('');
+    } catch(e) { console.error(e); }
+}
+
+async function loadRules() {
+    try {
+        const r = await fetch('/api/rules'); const d = await r.json();
+        const tb = document.getElementById('rulesTbody');
+        if (!d.length) { tb.innerHTML = '<tr><td colspan="4" class="empty">No rules in knowledge base.</td></tr>'; return; }
+        tb.innerHTML = d.map(r => `<tr>
+            <td style="max-width:400px">${esc(r.rule)}</td>
+            <td><span class="tag">${esc(r.category)}</span></td>
+            <td>${(r.confidence*100).toFixed(0)}%</td>
+            <td>${r.evidence_count}</td>
+        </tr>`).join('');
+    } catch(e) { console.error(e); }
+}
+
+async function loadLogs() {
+    try {
+        const r = await fetch('/api/logs'); const d = await r.json();
+        const box = document.getElementById('termBox');
+        box.textContent = d.logs || 'No logs available.';
+        box.scrollTop = box.scrollHeight;
+    } catch(e) { console.error(e); }
+}
+
+// ── Init & Auto-Refresh ──
+function loadAll() {
+    loadOverview(); loadNiches(); loadVideos(); loadAnalytics();
+    loadGenomes(); loadTopics(); loadExperiments(); loadRules();
+}
+loadAll();
+setInterval(loadAll, 8000);
+setInterval(() => {
+    if (document.getElementById('tLogs').classList.contains('on')) loadLogs();
+}, 5000);
+</script>
+</body>
+</html>
