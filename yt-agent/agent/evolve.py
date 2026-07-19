@@ -17,6 +17,7 @@ from datetime import datetime
 from agent.db import get_session, Genome, Video
 from agent.llm import chat_json
 from agent import competitor_scan
+from agent.tts import DEEPGRAM_VOICE_POOL
 
 MIN_SAMPLE_SIZE = int(os.getenv("EVOLVE_MIN_SAMPLE", 4))
 IMPROVEMENT_MARGIN = float(os.getenv("EVOLVE_IMPROVEMENT_MARGIN", 0.10))  # 10% better to win
@@ -37,7 +38,7 @@ def _own_performance_summary(session, genome_version: int, limit: int = 10) -> s
     if not videos:
         return "No performance data yet for this genome."
     lines = [
-        f"- \"{v.title}\" | ctr={v.ctr:.3f} | avg_view_duration={v.avg_view_duration_sec or 0:.0f}s | topic={v.topic}"
+        f"- \"{v.title}\" | ctr={v.ctr:.3f} | avg_view_duration={v.avg_view_duration_sec or 0:.0f}s | voice={v.voice_model or 'aura-asteria-en'} | topic={v.topic}"
         for v in videos
     ]
     return "\n".join(lines)
@@ -56,16 +57,17 @@ def propose_mutation() -> Genome:
     mutation = chat_json(
         system=(
             "You are optimizing a YouTube content-generation system. You will propose ONE "
-            "concrete mutation to the current 'genome' (prompt templates + pacing params) to "
-            "try to improve performance (CTR, retention). Base your proposal on the channel's "
+            "concrete mutation to the current 'genome' (prompt templates + pacing + voice model) to "
+            "try to improve performance (CTR, retention, watch time). Base your proposal on the channel's "
             "own past performance AND on competitor/viral patterns provided. Make ONE clear, "
-            "testable change at a time (e.g. punchier hooks, shorter scenes, different title "
-            "structure, more scenes for long-form) - not a total rewrite. "
+            "testable change at a time (e.g. punchier hooks, shorter scenes, different voice_model from pool, "
+            "more scenes for long-form) - not a total rewrite.\n"
+            f"AVAILABLE DEEPGRAM VOICE POOL (20+ Aura voices): {', '.join(DEEPGRAM_VOICE_POOL)}\n"
             "Respond ONLY as JSON with keys: "
             "ideation_system_prompt, script_system_prompt, seo_system_prompt, "
             "thumbnail_style_prompt, scene_count_long, scene_count_shorts, "
-            "length_note_long, length_note_shorts, rationale (1-2 sentences explaining "
-            "the single change you made and why)."
+            "length_note_long, length_note_shorts, voice_model (must be from AVAILABLE DEEPGRAM VOICE POOL), "
+            "rationale (1-2 sentences explaining the single change you made and why)."
         ),
         user=(
             f"CURRENT GENOME (control, version {control.version}):\n"
@@ -73,6 +75,7 @@ def propose_mutation() -> Genome:
             f"script_system_prompt: {control.script_system_prompt}\n"
             f"seo_system_prompt: {control.seo_system_prompt}\n"
             f"thumbnail_style_prompt: {control.thumbnail_style_prompt}\n"
+            f"voice_model: {getattr(control, 'voice_model', 'aura-asteria-en')}\n"
             f"scene_count_long: {control.scene_count_long}, scene_count_shorts: {control.scene_count_shorts}\n"
             f"length_note_long: {control.length_note_long}, length_note_shorts: {control.length_note_shorts}\n\n"
             f"OWN TOP-PERFORMING VIDEOS UNDER THIS GENOME:\n{own_perf}\n\n"
@@ -91,6 +94,7 @@ def propose_mutation() -> Genome:
         script_system_prompt=mutation["script_system_prompt"],
         seo_system_prompt=mutation["seo_system_prompt"],
         thumbnail_style_prompt=mutation["thumbnail_style_prompt"],
+        voice_model=mutation.get("voice_model", getattr(control, "voice_model", "aura-asteria-en")),
         scene_count_long=int(mutation["scene_count_long"]),
         scene_count_shorts=int(mutation["scene_count_shorts"]),
         length_note_long=mutation["length_note_long"],

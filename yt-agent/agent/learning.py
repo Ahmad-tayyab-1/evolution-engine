@@ -69,7 +69,7 @@ def evaluate_experiment_and_learn(video_id: int):
         '  "action": "new_rule" | "update_rule" | "none",\n'
         '  "rule_id": int | null (if update_rule),\n'
         '  "rule_text": str (concise, actionable principle without fluff),\n'
-        '  "category": "hook" | "title" | "thumbnail" | "pacing" | "topic" | "general",\n'
+        '  "category": "hook" | "title" | "thumbnail" | "pacing" | "topic" | "voice" | "general",\n'
         '  "confidence_delta": float (-0.2 to +0.2 change or initial confidence 0.6 to 0.8),\n'
         '  "reasoning": str\n'
         "}"

@@ -8,6 +8,7 @@ Title style, Script length, Voice speed, Publish time). Never mutates everything
 from datetime import datetime
 from agent.db import get_session, Experiment, Rule, Genome
 from agent.llm import chat_json
+from agent.tts import DEEPGRAM_VOICE_POOL
 
 
 def formulate_experiment(genome: Genome, video_id: int, format_type: str) -> int:
@@ -25,7 +26,7 @@ def formulate_experiment(genome: Genome, video_id: int, format_type: str) -> int
         f"Video Format: {format_type}\n"
         f"Current Genome Version: {genome.version}\n"
         f"KNOWLEDGE BASE (Lower confidence rules need testing):\n{rules_context}\n\n"
-        "Choose ONE variable from: hook_type, title_structure, thumbnail_style, scene_pacing, visual_mood.\n"
+        f"Choose ONE variable from: hook_type, title_structure, thumbnail_style, scene_pacing, visual_mood, voice_model (from pool: {', '.join(DEEPGRAM_VOICE_POOL)}).\n"
         "Respond ONLY as JSON:\n"
         "{\n"
         '  "variable": str,\n'

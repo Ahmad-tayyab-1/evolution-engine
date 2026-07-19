@@ -60,7 +60,7 @@ def produce_and_publish_one_video():
     base_idea = ideation.generate_video_idea(genome)
     
     # Module 4: Experiment Engine (single-variable test hypothesis setup)
-    dummy_vid = Video(title=base_idea["title"], topic=base_idea["topic"], format=base_idea["format"], status="planned", genome_version=genome.version, niche=base_idea.get("niche"), strategy_id=strat.id if strat else None)
+    dummy_vid = Video(title=base_idea["title"], topic=base_idea["topic"], format=base_idea["format"], status="planned", genome_version=genome.version, niche=base_idea.get("niche"), strategy_id=strat.id if strat else None, voice_model=getattr(genome, "voice_model", "aura-asteria-en"))
     session.add(dummy_vid)
     session.commit()
     vid_id = dummy_vid.id
@@ -87,7 +87,7 @@ def produce_and_publish_one_video():
                 script["scenes"], work_dir, vertical=vertical,
                 style_prompt=genome.thumbnail_style_prompt,
             )
-            audio_paths = tts.synthesize_scenes(script["scenes"], work_dir)
+            audio_paths = tts.synthesize_scenes(script["scenes"], work_dir, voice_model=getattr(genome, "voice_model", "aura-asteria-en"))
             video.status = "assets_ready"
             session.commit()
 

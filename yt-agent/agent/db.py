@@ -69,6 +69,7 @@ class Video(Base):
     niche = Column(String(100), nullable=True)  # which candidate niche this video belongs to
     strategy_id = Column(Integer, nullable=True)
     experiment_id = Column(Integer, nullable=True)
+    voice_model = Column(String(100), nullable=True)  # which Deepgram voice narrated this video
     fitness = Column(Float, default=0.0)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -139,6 +140,7 @@ class Genome(Base):
     length_note_shorts = Column(String(255), default="under 60 seconds")
 
     mutation_rationale = Column(Text, nullable=True)  # why this variant was proposed
+    voice_model = Column(String(100), default="aura-asteria-en")  # which Deepgram voice variant to test
     videos_produced = Column(Integer, default=0)
     avg_ctr = Column(Float, nullable=True)
     avg_retention = Column(Float, nullable=True)
@@ -243,6 +245,17 @@ def init_db():
     os.makedirs(os.path.dirname(os.getenv("DB_PATH", "./db/agent.db")) or ".", exist_ok=True)
     Base.metadata.create_all(engine)
 
+    # Safe migrations for existing databases
+    with engine.begin() as conn:
+        try:
+            conn.exec_driver_sql("ALTER TABLE genomes ADD COLUMN voice_model VARCHAR(100) DEFAULT 'aura-asteria-en'")
+        except Exception:
+            pass
+        try:
+            conn.exec_driver_sql("ALTER TABLE videos ADD COLUMN voice_model VARCHAR(100)")
+        except Exception:
+            pass
+
     session = get_session()
     if not session.query(Genome).first():
         seed = Genome(
@@ -252,6 +265,7 @@ def init_db():
             script_system_prompt=DEFAULT_SCRIPT_PROMPT,
             seo_system_prompt=DEFAULT_SEO_PROMPT,
             thumbnail_style_prompt=DEFAULT_THUMBNAIL_STYLE,
+            voice_model=os.getenv("DEEPGRAM_VOICE_MODEL", "aura-asteria-en"),
             mutation_rationale="Initial seed genome.",
             promoted_at=datetime.utcnow(),
         )
@@ -264,6 +278,7 @@ def init_db():
             Rule(rule="Titles formatted as punchy formulas (e.g. 'Why X Solved Y' or 'The X That No One Explained') drive higher click-through rates.", category="title", confidence=0.8, evidence_count=3, metrics_impacted="ctr"),
             Rule(rule="Bright, illuminated, high-contrast graphic novel illustrations out-perform dark pitch-black shadowy thumbnails.", category="thumbnail", confidence=0.85, evidence_count=4, metrics_impacted="ctr"),
             Rule(rule="Pacing scenes to roughly 15 words (~7 seconds each) maintains steady viewer retention.", category="pacing", confidence=0.75, evidence_count=2, metrics_impacted="retention"),
+            Rule(rule="Warm conversational English voices with natural human pacing out-perform robotic or monotonous voice profiles.", category="voice", confidence=0.75, evidence_count=2, metrics_impacted="retention,watch_time_hours"),
         ]
         session.add_all(seed_rules)
         session.commit()
