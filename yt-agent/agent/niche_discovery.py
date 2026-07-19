@@ -25,8 +25,8 @@ from agent.db import get_session, StrategyState, NicheScore, Video
 from agent.niches import NICHE_CANDIDATES
 from agent import youtube_client as yt
 
-MIN_VIDEOS_PER_NICHE = int(os.getenv("NICHE_MIN_VIDEOS", 2))
-GRACE_PERIOD_HOURS = 12
+MIN_VIDEOS_PER_NICHE = int(os.getenv("NICHE_MIN_VIDEOS", 4))
+GRACE_PERIOD_HOURS = 24
 
 
 def _view_velocity(view_count: int, published_at: str) -> float:
@@ -51,8 +51,8 @@ def _score_niche_opportunity(niche: str, topics: list) -> float:
     return round(demand_signal, 3)
 
 
-def start_discovery(days: int = 3):
-    days = max(2, min(days, 5))  # keep within the sane 2-5 day range
+def start_discovery(days: int = 20):
+    days = max(2, min(days, 30))  # keep within a thorough 2-30 day window (default 20 days)
     session = get_session()
     state = session.query(StrategyState).first()
     if not state:
@@ -77,9 +77,26 @@ def start_discovery(days: int = 3):
     session.close()
 
 
+def _ensure_niches_and_window(session):
+    """Ensures all NICHE_CANDIDATES exist in NicheScore and enforces the 15-20 day test window."""
+    state = session.query(StrategyState).first()
+    existing = {r.niche for r in session.query(NicheScore).all()}
+    for niche, topics in NICHE_CANDIDATES.items():
+        if niche not in existing:
+            row = NicheScore(niche=niche, opportunity_score=0.5)
+            session.add(row)
+    if state and state.phase == "niche_discovery" and state.discovery_started_at and state.discovery_ends_at:
+        target_days = int(os.getenv("NICHE_DISCOVERY_DAYS", 20))
+        min_end = state.discovery_started_at + timedelta(days=target_days)
+        if state.discovery_ends_at < min_end:
+            state.discovery_ends_at = min_end
+    session.commit()
+
+
 def pick_niche_for_video() -> tuple:
     """Returns (niche_name, topic_pool_list)."""
     session = get_session()
+    _ensure_niches_and_window(session)
     state = session.query(StrategyState).first()
 
     if state and state.phase == "locked" and state.locked_niche:
@@ -133,6 +150,7 @@ def update_niche_performance():
 
 def maybe_conclude_discovery():
     session = get_session()
+    _ensure_niches_and_window(session)
     state = session.query(StrategyState).first()
     if not state or state.phase != "niche_discovery" or not state.discovery_ends_at:
         session.close()

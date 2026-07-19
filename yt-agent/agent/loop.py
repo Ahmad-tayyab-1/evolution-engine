@@ -161,7 +161,7 @@ def run_forever():
     needs_start = not state or not state.discovery_ends_at
     session.close()
     if needs_start:
-        days = int(os.getenv("NICHE_DISCOVERY_DAYS", 5))
+        days = int(os.getenv("NICHE_DISCOVERY_DAYS", 20))
         log.info(f"Starting niche discovery phase ({days} days)...")
         niche_discovery.start_discovery(days=days)
 

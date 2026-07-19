@@ -1,8 +1,7 @@
 """
-Candidate faceless-channel niches for the discovery phase. Kept to 5,
-each meaningfully distinct, so a 5-day discovery window gives each one
-a real sample size instead of spreading too thin. Edit before first run
-if any obviously don't fit what you want the channel to be.
+Candidate faceless-channel niches for the discovery phase. Kept to 6 distinct categories,
+tested thoroughly across a 15-20 day discovery window to give each niche a robust sample size
+before locking on the highest-performing winner.
 """
 
 NICHE_CANDIDATES = {
@@ -25,5 +24,9 @@ NICHE_CANDIDATES = {
     "tech_explained": [
         "tech explained simply", "how everyday tech works",
         "AI concepts explained simply", "engineering marvels explained",
+    ],
+    "stick_man_animation": [
+        "stick figure animation humor", "stick man life lessons explained",
+        "relatable stick figure stories", "funny stick man cartoons explained",
     ],
 }
