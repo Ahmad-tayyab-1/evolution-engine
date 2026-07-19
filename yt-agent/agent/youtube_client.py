@@ -149,21 +149,28 @@ def get_channel_stats() -> dict:
     d12mo = today - datetime.timedelta(days=365)
     d90 = today - datetime.timedelta(days=90)
 
-    watch_resp = ya.reports().query(
-        ids=f"channel=={channel_id}", startDate=str(d12mo), endDate=str(today),
-        metrics="estimatedMinutesWatched",
-    ).execute()
-    watch_minutes = watch_resp.get("rows", [[0]])[0][0] if watch_resp.get("rows") else 0
+    watch_minutes = 0
+    try:
+        watch_resp = ya.reports().query(
+            ids=f"channel=={channel_id}", startDate=str(d12mo), endDate=str(today),
+            metrics="estimatedMinutesWatched",
+        ).execute()
+        watch_minutes = watch_resp.get("rows", [[0]])[0][0] if watch_resp.get("rows") else 0
+    except Exception as e:
+        log.warning(f"YouTube Analytics query failed for watch_minutes (channel may be new/uninitialized): {e}")
 
-    shorts_resp = ya.reports().query(
-        ids=f"channel=={channel_id}", startDate=str(d90), endDate=str(today),
-        metrics="views", dimensions="creatorContentType",
-    ).execute()
     shorts_views = 0
-    if shorts_resp.get("rows"):
-        for row in shorts_resp["rows"]:
-            if str(row[0]).lower() == "shorts":
-                shorts_views = row[1]
+    try:
+        shorts_resp = ya.reports().query(
+            ids=f"channel=={channel_id}", startDate=str(d90), endDate=str(today),
+            metrics="views", dimensions="creatorContentType",
+        ).execute()
+        if shorts_resp.get("rows"):
+            for row in shorts_resp["rows"]:
+                if str(row[0]).lower() == "shorts":
+                    shorts_views = row[1]
+    except Exception as e:
+        log.warning(f"YouTube Analytics query failed for shorts_views: {e}")
 
     return {
         "subs": subs,
