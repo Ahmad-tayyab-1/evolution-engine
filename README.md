@@ -20,7 +20,7 @@ The operational daemon that runs continuously on production servers (`yt-agent.s
 - **Content Pipeline**:
   - **Ideation & Strategy**: Scans competitor trends (`competitor_scan.py`) and generates high-CTR concepts (`ideation.py`, `niche_discovery.py`).
   - **Scripting**: Uses Groq/OpenAI to generate structured, retention-optimized scripts (`scriptgen.py`).
-  - **Visuals**: Integrates with **`https://gen.pollinations.ai/image`** for ultra-fast, zero-cost cinematic image generation (`imagegen.py`).
+  - **Visuals**: Integrates with **`https://gen.pollinations.ai/image`** using Bring Your Own Pollen (BYOP) API keys (`sk_...`) for ultra-fast, high-volume cinematic image generation (`imagegen.py`).
   - **Narration**: Uses **Deepgram** TTS (`tts.py`) for human-sounding, studio-quality narration.
   - **Assembly**: Renders scenes into 1080p/4K MP4 videos using `ffmpeg` (`assemble.py`).
   - **Publishing & Analytics**: Uploads directly via YouTube Data API v3 (`youtube_client.py`) and monitors watch time/monetization thresholds (`fitness.py`, `evolve.py`).
@@ -66,7 +66,7 @@ Key environment variables inside `yt-agent/.env`:
 ```ini
 # LLM & Voice
 GROQ_API_KEY="gsk_your_groq_key_here"
-GROQ_MODEL="llama-3.3-70b-versatile"
+GROQ_MODEL="openai/gpt-oss-120b"
 DEEPGRAM_API_KEY="your_deepgram_key_here"
 DEEPGRAM_VOICE_MODEL="aura-asteria-en"
 

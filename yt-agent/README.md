@@ -17,7 +17,7 @@ pip install -r requirements.txt
 sudo apt install -y ffmpeg
 
 cp .env.example .env
-# edit .env: GROQ_API_KEY, DEEPGRAM_API_KEY, YT_CLIENT_SECRET_FILE path
+# edit .env: GROQ_API_KEY, DEEPGRAM_API_KEY, POLLINATIONS_API_KEY, YT_CLIENT_SECRET_FILE path
 ```
 
 ## 2. YouTube OAuth (one-time)
